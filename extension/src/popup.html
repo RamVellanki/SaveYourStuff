@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Save Bookmark</title>
+    <link rel="stylesheet" href="popup.css">
+  </head>
+  <body>
+    <div class="popup-container" id="popup">
+      <h2>Save Bookmark</h2>
+      <form id="bookmarkForm">
+        <div class="form-group">
+          <label for="title">Title *</label>
+          <input type="text" id="title" required>
+        </div>
+
+        <div class="form-group">
+          <label for="summary">Summary</label>
+          <textarea id="summary" rows="3"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="tags">Tags</label>
+          <div class="tags-container">
+            <div class="selected-tags" id="selectedTags"></div>
+            <div class="tags-input-wrapper">
+              <input type="text" id="tagsInput" placeholder="Enter tags..." autocomplete="off">
+              <div class="tags-dropdown" id="tagsDropdown" style="display: none;"></div>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" id="saveBtn">Save Bookmark</button>
+      </form>
+
+      <div id="message" class="message" style="display: none;"></div>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

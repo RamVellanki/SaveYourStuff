@@ -1,0 +1,16 @@
+{
+  "name": "contextual-bookmarking-system",
+  "version": "1.0.0",
+  "description": "Contextual Bookmarking System MVP",
+  "private": true,
+  "scripts": {
+    "install-all": "cd backend && npm install && cd ../web && npm install && cd ../extension && npm install",
+    "dev-backend": "cd backend && npm run dev",
+    "dev-web": "cd web && npm run dev",
+    "dev-extension": "cd extension && npm run dev",
+    "build-all": "cd backend && npm run build && cd ../web && npm run build && cd ../extension && npm run build"
+  },
+  "keywords": ["bookmarks", "organization", "productivity"],
+  "author": "",
+  "license": "MIT"
+}
