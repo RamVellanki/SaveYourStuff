@@ -252,7 +252,13 @@ export const FilterPanel = ({ onFilterChange, selectedTags = [], selectedCategor
               <span className="date-label">{dateRange.min}</span>
               <span className="date-label">{dateRange.max}</span>
             </div>
-            <div className="slider-container">
+            <div 
+              className="slider-container"
+              style={{
+                '--range-left': `${sliderValues[0]}%`,
+                '--range-right': `${100 - sliderValues[1]}%`
+              } as React.CSSProperties}
+            >
               <input
                 type="range"
                 min="0"
@@ -264,7 +270,8 @@ export const FilterPanel = ({ onFilterChange, selectedTags = [], selectedCategor
                     handleSliderChange([newValue, sliderValues[1]]);
                   }
                 }}
-                className="range-slider range-slider-left"
+                className={`range-slider range-slider-left ${sliderValues[0] > sliderValues[1] - 5 ? 'higher' : ''}`}
+                style={{ zIndex: sliderValues[0] > sliderValues[1] - 5 ? 3 : 1 }}
               />
               <input
                 type="range"
@@ -278,6 +285,7 @@ export const FilterPanel = ({ onFilterChange, selectedTags = [], selectedCategor
                   }
                 }}
                 className="range-slider range-slider-right"
+                style={{ zIndex: 2 }}
               />
             </div>
             {(selectedStartDate || selectedEndDate) && (
