@@ -69,7 +69,11 @@ export const getBookmarks = async (
     }
 
     if (filters.endDate) {
-      query = query.lte('created_at', filters.endDate);
+      // If end date is provided, include the entire day by adding 23:59:59.999
+      const endDateTime = filters.endDate.includes('T') 
+        ? filters.endDate 
+        : `${filters.endDate}T23:59:59.999Z`;
+      query = query.lte('created_at', endDateTime);
     }
 
     const limit = filters.limit || 20;
