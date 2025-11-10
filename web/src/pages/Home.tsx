@@ -46,6 +46,41 @@ export const Home = () => {
     refetch(newFilters);
   };
 
+  // Group bookmarks by date
+  const groupBookmarksByDate = (bookmarks: any[]) => {
+    const groups: { [key: string]: any[] } = {};
+    
+    bookmarks.forEach(bookmark => {
+      const date = new Date(bookmark.created_at).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        weekday: 'long'
+      });
+      
+      if (!groups[date]) {
+        groups[date] = [];
+      }
+      groups[date].push(bookmark);
+    });
+    
+    // Sort dates in descending order (newest first)
+    const sortedDates = Object.keys(groups).sort((a, b) => {
+      const dateA = new Date(groups[a][0].created_at);
+      const dateB = new Date(groups[b][0].created_at);
+      return dateB.getTime() - dateA.getTime();
+    });
+    
+    return sortedDates.map(date => ({
+      date,
+      bookmarks: groups[date].sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      )
+    }));
+  };
+
+  const groupedBookmarks = groupBookmarksByDate(bookmarks);
+
   if (error) {
     return <div className="error-message">Error: {error}</div>;
   }
@@ -77,13 +112,23 @@ export const Home = () => {
             hasMore={hasMore}
             loading={loading}
           >
-            <div className="bookmarks-grid">
-              {bookmarks.map((bookmark) => (
-                <BookmarkCard 
-                  key={bookmark.id} 
-                  bookmark={bookmark} 
-                  onTagClick={handleTagClick}
-                />
+            <div className="bookmarks-timeline">
+              {groupedBookmarks.map((group) => (
+                <div key={group.date} className="date-group">
+                  <div className="date-header">
+                    <h2 className="date-title">{group.date}</h2>
+                    <span className="bookmark-count">{group.bookmarks.length} bookmark{group.bookmarks.length !== 1 ? 's' : ''}</span>
+                  </div>
+                  <div className="bookmarks-list">
+                    {group.bookmarks.map((bookmark) => (
+                      <BookmarkCard 
+                        key={bookmark.id} 
+                        bookmark={bookmark} 
+                        onTagClick={handleTagClick}
+                      />
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           </InfiniteScroll>
