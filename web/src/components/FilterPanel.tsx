@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { tagApi, categoryApi, bookmarkApi } from '../api';
+import { tagApi, categoryApi } from '../api';
 import { Tag, Category } from '../types';
 
 interface FilterPanelProps {
@@ -14,8 +14,6 @@ export const FilterPanel = ({ onFilterChange, selectedTags = [], selectedCategor
   const [categories, setCategories] = useState<Category[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dateRange, setDateRange] = useState<{ min: string; max: string } | null>(null);
-  const [sliderValues, setSliderValues] = useState<[number, number]>([0, 100]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -35,35 +33,6 @@ export const FilterPanel = ({ onFilterChange, selectedTags = [], selectedCategor
           console.log('Loaded categories as fallback:', categoriesResult);
         }
 
-        // Fetch bookmarks to determine date range for sliders
-        try {
-          const bookmarksResult = await bookmarkApi.getAll({ limit: 1000 }); // Get a large sample
-          const now = new Date();
-          const today = now.toISOString().split('T')[0];
-          
-          if (bookmarksResult.length > 0) {
-            const dates = bookmarksResult.map(b => new Date(b.created_at)).sort((a, b) => a.getTime() - b.getTime());
-            const minDate = dates[0].toISOString().split('T')[0];
-            // Always use today as max date to allow filtering up to current date
-            setDateRange({ min: minDate, max: today });
-          } else {
-            // Default to last 30 days if no bookmarks
-            const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-            setDateRange({ 
-              min: thirtyDaysAgo.toISOString().split('T')[0], 
-              max: today 
-            });
-          }
-        } catch (bookmarkError) {
-          console.warn('Failed to load bookmarks for date range:', bookmarkError);
-          // Default to last 30 days
-          const now = new Date();
-          const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-          setDateRange({ 
-            min: thirtyDaysAgo.toISOString().split('T')[0], 
-            max: now.toISOString().split('T')[0] 
-          });
-        }
       } catch (error) {
         console.error('Failed to fetch filter data:', error);
       } finally {
@@ -97,60 +66,25 @@ export const FilterPanel = ({ onFilterChange, selectedTags = [], selectedCategor
     onFilterChange({ category, tags: undefined }); // Clear tags when selecting category
   };
 
-  // Convert slider percentage to actual date
-  const sliderToDate = (percentage: number): string => {
-    if (!dateRange) return '';
-    const minTime = new Date(dateRange.min).getTime();
-    const maxTime = new Date(dateRange.max).getTime();
-    const timeRange = maxTime - minTime;
-    const targetTime = minTime + (timeRange * percentage / 100);
-    return new Date(targetTime).toISOString().split('T')[0];
-  };
-
-  // Convert date to slider percentage
-  const dateToSlider = (date: string): number => {
-    if (!dateRange || !date) return 0;
-    const minTime = new Date(dateRange.min).getTime();
-    const maxTime = new Date(dateRange.max).getTime();
-    const targetTime = new Date(date).getTime();
-    const timeRange = maxTime - minTime;
-    if (timeRange === 0) return 0;
-    return Math.round(((targetTime - minTime) / timeRange) * 100);
-  };
-
-  // Update slider values when selected dates change
-  useEffect(() => {
-    if (dateRange) {
-      const startValue = selectedStartDate ? dateToSlider(selectedStartDate) : 0;
-      const endValue = selectedEndDate ? dateToSlider(selectedEndDate) : 100;
-      setSliderValues([startValue, endValue]);
-    }
-  }, [selectedStartDate, selectedEndDate, dateRange]);
-
-  const handleSliderChange = (values: [number, number]) => {
-    setSliderValues(values);
-    const [startPercentage, endPercentage] = values;
-    
-    // Only apply filter if we have moved from the default full range
-    const startDate = startPercentage > 0 ? sliderToDate(startPercentage) : undefined;
-    const endDate = endPercentage < 100 ? sliderToDate(endPercentage) : undefined;
-    
+  const handleDateRangeChange = (startDate?: string, endDate?: string) => {
     onFilterChange({ 
       tags: selectedTags.length > 0 ? selectedTags : undefined,
       category: selectedCategory,
-      startDate,
-      endDate
+      startDate: startDate || undefined,
+      endDate: endDate || undefined
     });
+  };
+
+  const handleStartDateChange = (date: string) => {
+    handleDateRangeChange(date, selectedEndDate);
+  };
+
+  const handleEndDateChange = (date: string) => {
+    handleDateRangeChange(selectedStartDate, date);
   };
 
   const clearDateFilters = () => {
-    setSliderValues([0, 100]);
-    onFilterChange({ 
-      tags: selectedTags.length > 0 ? selectedTags : undefined,
-      category: selectedCategory,
-      startDate: undefined,
-      endDate: undefined
-    });
+    handleDateRangeChange(undefined, undefined);
   };
 
   const clearAllFilters = () => {
@@ -235,75 +169,42 @@ export const FilterPanel = ({ onFilterChange, selectedTags = [], selectedCategor
       </div>
 
       {/* Date Filter Section */}
-      {dateRange && (
-        <div className="filter-section">
-          <div className="filter-section-header">
-            <h4>Date Range</h4>
-            {(selectedStartDate || selectedEndDate) && (
-              <button 
-                className="tag-control-btn clear" 
-                onClick={clearDateFilters}
-                type="button"
-              >
-                Clear Dates
-              </button>
-            )}
-          </div>
-          <div className="date-range-slider">
-            <div className="date-range-labels">
-              <span className="date-label">{dateRange.min}</span>
-              <span className="date-label">{dateRange.max}</span>
-            </div>
-            <div 
-              className="slider-container"
-              style={{
-                '--range-left': `${sliderValues[0]}%`,
-                '--range-right': `${100 - sliderValues[1]}%`
-              } as React.CSSProperties}
+      <div className="filter-section">
+        <div className="filter-section-header">
+          <h4>Date Range</h4>
+          {(selectedStartDate || selectedEndDate) && (
+            <button 
+              className="tag-control-btn clear" 
+              onClick={clearDateFilters}
+              type="button"
             >
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={sliderValues[0]}
-                onChange={(e) => {
-                  const newValue = parseInt(e.target.value);
-                  if (newValue <= sliderValues[1]) {
-                    handleSliderChange([newValue, sliderValues[1]]);
-                  }
-                }}
-                className={`range-slider range-slider-left ${sliderValues[0] > sliderValues[1] - 5 ? 'higher' : ''}`}
-                style={{ zIndex: sliderValues[0] > sliderValues[1] - 5 ? 3 : 1 }}
-              />
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={sliderValues[1]}
-                onChange={(e) => {
-                  const newValue = parseInt(e.target.value);
-                  if (newValue >= sliderValues[0]) {
-                    handleSliderChange([sliderValues[0], newValue]);
-                  }
-                }}
-                className="range-slider range-slider-right"
-                style={{ zIndex: 2 }}
-              />
-            </div>
-            {(selectedStartDate || selectedEndDate) && (
-              <div className="selected-date-range">
-                <span className="selected-date">
-                  {selectedStartDate ? sliderToDate(sliderValues[0]) : dateRange.min}
-                </span>
-                <span className="to-label">to</span>
-                <span className="selected-date">
-                  {selectedEndDate ? sliderToDate(sliderValues[1]) : dateRange.max}
-                </span>
-              </div>
-            )}
+              Clear Dates
+            </button>
+          )}
+        </div>
+        <div className="date-filters">
+          <div className="date-filter-group">
+            <label htmlFor="start-date">From:</label>
+            <input
+              id="start-date"
+              type="date"
+              value={selectedStartDate || ''}
+              onChange={(e) => handleStartDateChange(e.target.value)}
+              className="date-input"
+            />
+          </div>
+          <div className="date-filter-group">
+            <label htmlFor="end-date">To:</label>
+            <input
+              id="end-date"
+              type="date"
+              value={selectedEndDate || ''}
+              onChange={(e) => handleEndDateChange(e.target.value)}
+              className="date-input"
+            />
           </div>
         </div>
-      )}
+      </div>
 
       {/* Categories Section (only show if we have both tags and categories) */}
       {categories.length > 0 && tags.length > 0 && (
@@ -358,11 +259,13 @@ export const FilterPanel = ({ onFilterChange, selectedTags = [], selectedCategor
             )}
             {(selectedStartDate || selectedEndDate) && (
               <span className="active-filter-tag">
-                {selectedStartDate && selectedEndDate 
-                  ? `${selectedStartDate} to ${selectedEndDate}`
-                  : selectedStartDate 
-                    ? `From: ${selectedStartDate}`
-                    : `To: ${selectedEndDate}`
+                {selectedStartDate && selectedEndDate && selectedStartDate === selectedEndDate
+                  ? `On: ${selectedStartDate}`
+                  : selectedStartDate && selectedEndDate 
+                    ? `${selectedStartDate} to ${selectedEndDate}`
+                    : selectedStartDate 
+                      ? `From: ${selectedStartDate}`
+                      : `To: ${selectedEndDate}`
                 }
                 <button 
                   className="remove-filter"

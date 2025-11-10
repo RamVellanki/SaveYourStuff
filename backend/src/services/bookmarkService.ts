@@ -64,16 +64,32 @@ export const getBookmarks = async (
       query = query.or(tagConditions);
     }
 
-    if (filters.startDate) {
-      query = query.gte('created_at', filters.startDate);
-    }
-
-    if (filters.endDate) {
-      // If end date is provided, include the entire day by adding 23:59:59.999
-      const endDateTime = filters.endDate.includes('T') 
-        ? filters.endDate 
-        : `${filters.endDate}T23:59:59.999Z`;
-      query = query.lte('created_at', endDateTime);
+    // Handle date filtering with proper same-date logic
+    if (filters.startDate || filters.endDate) {
+      const startDate = filters.startDate;
+      const endDate = filters.endDate;
+      
+      if (startDate && endDate && startDate === endDate) {
+        // Same date: filter for exact day (from 00:00:00 to 23:59:59.999)
+        const startDateTime = `${startDate}T00:00:00.000Z`;
+        const endDateTime = `${endDate}T23:59:59.999Z`;
+        query = query.gte('created_at', startDateTime).lte('created_at', endDateTime);
+      } else {
+        // Different dates or only one date provided
+        if (startDate) {
+          const startDateTime = startDate.includes('T') 
+            ? startDate 
+            : `${startDate}T00:00:00.000Z`;
+          query = query.gte('created_at', startDateTime);
+        }
+        
+        if (endDate) {
+          const endDateTime = endDate.includes('T') 
+            ? endDate 
+            : `${endDate}T23:59:59.999Z`;
+          query = query.lte('created_at', endDateTime);
+        }
+      }
     }
 
     const limit = filters.limit || 20;
