@@ -11,6 +11,7 @@ export const Home = () => {
     offset: 0,
   });
   const [searchQuery, setSearchQuery] = useState('');
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   const { bookmarks, loading, error, refetch } = useBookmarks(filters);
   const [hasMore, setHasMore] = useState(true);
@@ -61,6 +62,14 @@ export const Home = () => {
 
   const clearSearch = () => {
     setSearchQuery('');
+  };
+
+  const toggleMobileFilters = () => {
+    setShowMobileFilters(!showMobileFilters);
+  };
+
+  const closeMobileFilters = () => {
+    setShowMobileFilters(false);
   };
 
   const handleLoadMore = () => {
@@ -131,7 +140,7 @@ export const Home = () => {
       <div className="main-content">
         <div className="content-header">
           <h1>My Bookmarks</h1>
-          <div className="inline-search">
+          <div className="inline-search desktop-only">
             <div className="search-input-wrapper">
               <input
                 type="text"
@@ -157,6 +166,77 @@ export const Home = () => {
             </div>
           </div>
         </div>
+
+        {/* Mobile search and filter controls */}
+        <div className="mobile-controls">
+          <div className="mobile-search">
+            <div className="search-input-wrapper">
+              <input
+                type="text"
+                placeholder="Search titles..."
+                value={searchQuery}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                className="search-input-inline"
+              />
+              {searchQuery && (
+                <button
+                  onClick={clearSearch}
+                  className="clear-search-btn"
+                  type="button"
+                  aria-label="Clear search"
+                >
+                  ×
+                </button>
+              )}
+              <svg className="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
+            </div>
+          </div>
+          <button 
+            className="mobile-filter-btn"
+            onClick={toggleMobileFilters}
+            type="button"
+            aria-label="Open filters"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"></polygon>
+            </svg>
+            Filter
+          </button>
+        </div>
+
+        {/* Mobile Filter Popup */}
+        {showMobileFilters && (
+          <div className="mobile-filter-overlay" onClick={closeMobileFilters}>
+            <div className="mobile-filter-popup" onClick={(e) => e.stopPropagation()}>
+              <div className="mobile-filter-header">
+                <h3>Filters</h3>
+                <button 
+                  className="close-mobile-filter" 
+                  onClick={closeMobileFilters}
+                  type="button"
+                  aria-label="Close filters"
+                >
+                  ×
+                </button>
+              </div>
+              <div className="mobile-filter-content">
+                <FilterPanel
+                  onFilterChange={(newFilters) => {
+                    handleFilterChange(newFilters);
+                    closeMobileFilters();
+                  }}
+                  selectedTags={filters.tags}
+                  selectedCategory={filters.category}
+                  selectedStartDate={filters.startDate}
+                  selectedEndDate={filters.endDate}
+                />
+              </div>
+            </div>
+          </div>
+        )}
 
         {loading && bookmarks.length === 0 ? (
           <div className="loading">Loading bookmarks...</div>
