@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { BookmarkCard } from '../components/BookmarkCard';
 import { FilterPanel } from '../components/FilterPanel';
 import { InfiniteScroll } from '../components/InfiniteScroll';
@@ -10,6 +10,7 @@ export const Home = () => {
     limit: 20,
     offset: 0,
   });
+  const [searchQuery, setSearchQuery] = useState('');
 
   const { bookmarks, loading, error, refetch } = useBookmarks(filters);
   const [hasMore, setHasMore] = useState(true);
@@ -30,6 +31,36 @@ export const Home = () => {
     if (!currentTags.includes(tag)) {
       handleFilterChange({ tags: [...currentTags, tag] });
     }
+  };
+
+  // Debounced search handler
+  const debouncedSearch = useCallback((query: string) => {
+    setFilters(prevFilters => {
+      const newFilters = {
+        ...prevFilters,
+        search: query || undefined,
+        offset: 0, // Reset pagination when search changes
+      };
+      refetch(newFilters);
+      return newFilters;
+    });
+  }, [refetch]);
+
+  // Debounce search input
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      debouncedSearch(searchQuery);
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, debouncedSearch]);
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
   };
 
   const handleLoadMore = () => {
@@ -98,7 +129,34 @@ export const Home = () => {
       </div>
 
       <div className="main-content">
-        <h1>My Bookmarks</h1>
+        <div className="content-header">
+          <h1>My Bookmarks</h1>
+          <div className="inline-search">
+            <div className="search-input-wrapper">
+              <input
+                type="text"
+                placeholder="Search bookmarks..."
+                value={searchQuery}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                className="search-input-inline"
+              />
+              {searchQuery && (
+                <button
+                  onClick={clearSearch}
+                  className="clear-search-btn"
+                  type="button"
+                  aria-label="Clear search"
+                >
+                  ×
+                </button>
+              )}
+              <svg className="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
 
         {loading && bookmarks.length === 0 ? (
           <div className="loading">Loading bookmarks...</div>
