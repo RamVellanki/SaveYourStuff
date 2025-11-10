@@ -135,7 +135,7 @@ export const Home = () => {
             <div className="search-input-wrapper">
               <input
                 type="text"
-                placeholder="Search bookmarks..."
+                placeholder="Search titles..."
                 value={searchQuery}
                 onChange={(e) => handleSearchChange(e.target.value)}
                 className="search-input-inline"

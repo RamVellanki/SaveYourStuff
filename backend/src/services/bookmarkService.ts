@@ -40,17 +40,15 @@ export const getBookmarks = async (
   filters: BookmarkFilters = {}
 ): Promise<Bookmark[]> => {
   try {
-    // Use the bookmarks_with_tags view for efficient tag querying
+    // Temporarily use bookmarks table to test search functionality
     let query = supabase
-      .from('bookmarks_with_tags')
+      .from('bookmarks')
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
     if (filters.search) {
-      query = query.or(
-        `title.ilike.%${filters.search}%,summary.ilike.%${filters.search}%,url.ilike.%${filters.search}%`
-      );
+      query = query.ilike('title', `%${filters.search}%`);
     }
 
     // Support both category (legacy) and tags filtering
