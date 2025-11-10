@@ -38,18 +38,20 @@ export const FilterPanel = ({ onFilterChange, selectedTags = [], selectedCategor
         // Fetch bookmarks to determine date range for sliders
         try {
           const bookmarksResult = await bookmarkApi.getAll({ limit: 1000 }); // Get a large sample
+          const now = new Date();
+          const today = now.toISOString().split('T')[0];
+          
           if (bookmarksResult.length > 0) {
             const dates = bookmarksResult.map(b => new Date(b.created_at)).sort((a, b) => a.getTime() - b.getTime());
             const minDate = dates[0].toISOString().split('T')[0];
-            const maxDate = dates[dates.length - 1].toISOString().split('T')[0];
-            setDateRange({ min: minDate, max: maxDate });
+            // Always use today as max date to allow filtering up to current date
+            setDateRange({ min: minDate, max: today });
           } else {
             // Default to last 30 days if no bookmarks
-            const now = new Date();
             const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
             setDateRange({ 
               min: thirtyDaysAgo.toISOString().split('T')[0], 
-              max: now.toISOString().split('T')[0] 
+              max: today 
             });
           }
         } catch (bookmarkError) {
