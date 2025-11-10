@@ -8,7 +8,7 @@ function App() {
       <div className="app">
         <nav className="navbar">
           <div className="nav-content">
-            <h1 className="logo">Bookmarks</h1>
+            <h1 className="logo">Save Your Stuff</h1>
             <div className="nav-links">
               <Link to="/" className="nav-link">Home</Link>
             </div>

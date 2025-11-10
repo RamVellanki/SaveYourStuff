@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Contextual Bookmarking",
+  "name": "SaveYourStuff",
   "version": "1.0.0",
-  "description": "Save and organize bookmarks with context",
+  "description": "Save and organize your stuff with context",
   "permissions": [
     "activeTab",
     "storage"

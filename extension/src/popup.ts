@@ -296,20 +296,20 @@ if ((window as any).popupInitialized) {
       const result = await response.json();
 
       if (result.success) {
-        showMessage('Bookmark saved successfully!', 'success');
+        showMessage('Saved successfully!', 'success');
         setTimeout(() => {
           window.close();
         }, 1500);
       } else {
-        showMessage(result.error || 'Failed to save bookmark', 'error');
+        showMessage(result.error || 'Failed to save', 'error');
       }
     } catch (error) {
-      showMessage('Failed to save bookmark', 'error');
+      showMessage('Failed to save', 'error');
       console.error(error);
     } finally {
       isSubmitting = false;
       saveBtn.disabled = false;
-      saveBtn.textContent = 'Save Bookmark';
+      saveBtn.textContent = 'Save Your Stuff';
     }
   });
 

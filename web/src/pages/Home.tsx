@@ -139,7 +139,7 @@ export const Home = () => {
 
       <div className="main-content">
         <div className="content-header">
-          <h1>My Bookmarks</h1>
+          <h1>Your Stuff</h1>
           <div className="inline-search desktop-only">
             <div className="search-input-wrapper">
               <input
@@ -239,10 +239,10 @@ export const Home = () => {
         )}
 
         {loading && bookmarks.length === 0 ? (
-          <div className="loading">Loading bookmarks...</div>
+          <div className="loading">Loading your stuff...</div>
         ) : bookmarks.length === 0 ? (
           <div className="empty-state">
-            <p>No bookmarks yet. Add some using the browser extension!</p>
+            <p>No stuff saved yet. Add some using the browser extension!</p>
           </div>
         ) : (
           <InfiniteScroll
@@ -255,7 +255,7 @@ export const Home = () => {
                 <div key={group.date} className="date-group">
                   <div className="date-header">
                     <h2 className="date-title">{group.date}</h2>
-                    <span className="bookmark-count">{group.bookmarks.length} bookmark{group.bookmarks.length !== 1 ? 's' : ''}</span>
+                    <span className="bookmark-count">{group.bookmarks.length} item{group.bookmarks.length !== 1 ? 's' : ''}</span>
                   </div>
                   <div className="bookmarks-list">
                     {group.bookmarks.map((bookmark) => (

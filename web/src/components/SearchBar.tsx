@@ -26,7 +26,7 @@ export const SearchBar = ({ onSearch }: SearchBarProps) => {
     <div className="search-bar">
       <input
         type="text"
-        placeholder="Search bookmarks..."
+        placeholder="Search your stuff..."
         value={query}
         onChange={handleChange}
         className="search-input"

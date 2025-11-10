@@ -21,7 +21,7 @@ export const useBookmarks = (initialFilters?: BookmarkFilters): UseBookmarksRetu
       const result = await bookmarkApi.getAll(filters);
       setBookmarks(result);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch bookmarks');
+      setError(err instanceof Error ? err.message : 'Failed to fetch your stuff');
     } finally {
       setLoading(false);
     }

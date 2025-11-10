@@ -37,7 +37,7 @@ export const Search = () => {
 
   return (
     <div className="search-page">
-      <h1>Search Bookmarks</h1>
+      <h1>Search Your Stuff</h1>
 
       <SearchBar onSearch={handleSearch} />
 
@@ -47,7 +47,7 @@ export const Search = () => {
         <div className="loading">Searching...</div>
       ) : searchQuery && bookmarks.length === 0 ? (
         <div className="empty-state">
-          <p>No bookmarks found for "{searchQuery}"</p>
+          <p>No stuff found for "{searchQuery}"</p>
         </div>
       ) : (
         <div className="bookmarks-grid">
